@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estimation Immobilière - Justine Haye</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f0e6;
+      color: #333;
+    }
+    header {
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e') center/cover no-repeat;
+      color: white;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.5rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    main {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .form-section {
+      background: #fff8f0;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin-top: 1rem;
+    }
+    input, select, button {
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 0.5rem;
+    }
+    button {
+      background-color: #d2b48c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #c2a678;
+    }
+    .cta-section, .testimonials, .why-section, .faq {
+      margin-top: 3rem;
+    }
+    .testimonial {
+      background: #f0e7d8;
+      padding: 1rem;
+      border-left: 4px solid #d2b48c;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    #result {
+      font-size: 1.5rem;
+      color: #005f73;
+      margin-top: 1.5rem;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background-color: #f0e7d8;
+    }
+    footer a {
+      color: #a67c52;
+      text-decoration: none;
+      margin: 0 0.5rem;
+    }
+    .contact-info {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+  </style>
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      const form = document.querySelector("form");
+      const result = document.createElement("div");
+      result.id = "result";
+      form.appendChild(result);
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const data = new FormData(form);
+        const type = data.get("type");
+        const surface = parseFloat(data.get("surface")) || 0;
+        const rooms = parseInt(data.get("rooms")) || 0;
+        const year = parseInt(data.get("year")) || 2024;
+        const state = data.get("state");
+        const exterior = data.get("exterior") === "yes";
+        const city = (data.get("city") || '').trim().toLowerCase();
+
+        let pricePerM2 = 0;
+        if (type === "Maison") pricePerM2 = 4374;
+        else if (type === "Appartement") pricePerM2 = 3571;
+        else if (type === "Terrain") pricePerM2 = 800;
+
+        let estimation = surface * pricePerM2;
+
+        // Bonus
+        if (state === "Rénové") estimation *= 1.05;
+        if (exterior) estimation *= 1.10;
+        if (rooms > 2) estimation *= 1 + ((rooms - 2) * 0.01);
+
+        // Malus
+        if (state === "À rénover") estimation *= 0.90;
+        if (year < 1995) estimation *= 0.95;
+
+        // Bonus/Malus spécifique aux villes
+        const bonusVilles = ["montpellier", "castelnau-le-lez", "lattes", "sète", "pérols", "la grande motte", "palavas-les-flots"];
+        const malusVilles = ["nîmes", "villeneuve-lès-maguelone"];
+        
+        if (bonusVilles.includes(city)) {
+          estimation *= 1.10;  // Bonus de 10%
+        } else if (malusVilles.includes(city)) {
+          estimation *= 0.90;  // Malus de 10%
+        }
+
+        const minEstimate = Math.round(estimation * 0.8);
+        const maxEstimate = Math.round(estimation);
+
+        result.innerHTML = `🧮 Estimation : entre <strong>${minEstimate.toLocaleString()} €</strong> et <strong>${maxEstimate.toLocaleString()} €</strong>`;
+      });
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Justine Haye - Immobilier à Montpellier</h1>
+    <p>Estimez gratuitement la valeur de votre bien, en toute simplicité.</p>
+  </header>
+
+  <main>
+    <section class="form-section">
+      <form action="https://formspree.io/f/xnndqkye" method="POST">
+        <label for="type">Type de bien</label>
+        <select id="type" name="type">
+          <option>Maison</option>
+          <option>Appartement</option>
+          <option>Terrain</option>
+        </select>
+
+        <label for="city">Ville</label>
+        <input type="text" id="city" name="city" required>
+
+        <label for="address">Adresse du bien</label>
+        <input type="text" id="address" name="address" required>
+
+        <label for="surface">Surface (m²)</label>
+        <input type="number" id="surface" name="surface" required>
+
+        <label for="rooms">Nombre de chambres</label>
+        <input type="number" id="rooms" name="rooms">
+
+        <label for="year">Année de construction</label>
+        <input type="number" id="year" name="year">
+
+        <label for="state">État général</label>
+        <select id="state" name="state">
+          <option>Neuf</option>
+          <option>Rénové</option>
+          <option>À rénover</option>
+        </select>
+
+        <label for="exterior">
+          Jardin, terrasse ou piscine ?
+        </label>
+        <select id="exterior" name="exterior">
+          <option value="no">Non</option>
+          <option value="yes">Oui</option>
+        </select>
+
+        <label for="phone">Téléphone</label>
+        <input type="tel" id="phone" name="phone" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+
+        <button type="submit">Obtenez votre estimation</button>
+      </form>
+    </section>
+
+    <section class="cta-section">
+      <h2>Estimation 100% gratuite et sans engagement</h2>
+    </section>
+
+    <section class="testimonials">
+      <h2>Ce que disent mes clients</h2>
+      <div class="testimonial">
+        <p>"Professionnelle, à l’écoute, très réactive et toujours disponible. Merci Justine pour votre accompagnement !"</p>
+        <p><strong>- Sophie R.</strong></p>
+      </div>
+      <div class="testimonial">
+        <p>"Très bonne conseillère. Elle m’a très bien accompagnée pour la vente de mon appartement à Montpellier. Je recommande vivement."</p>
+        <p><strong>- Guillaume P.</strong></p>
+      </div>
+      <div class="testimonial">
+        <p>"Justine est une personne de confiance. Elle est très professionnelle et humaine. Une vraie perle dans l'immobilier !"</p>
+        <p><strong>- Nadia M.</strong></p>
+      </div>
+    </section>
+
+    <section class="why-section">
+      <h2>Pourquoi me faire confiance ?</h2>
+      <ul>
+        <li>Expérience locale à Montpellier</li>
+        <li>Estimation précise basée sur le marché actuel</li>
+        <li>Gratuit et sans engagement</li>
+      </ul>
+    </section>
+
+    <section class="faq">
+      <h2>FAQ</h2>
+      <p><strong>Combien de temps prend l'estimation ?</strong> Quelques minutes seulement !</p>
+      <p><strong>Mon estimation est-elle fiable ?</strong> Oui, elle se base sur des données récentes et mon expertise locale.</p>
+    </section>
+
+    <section class="contact-info">
+      <h3>Contactez-moi</h3>
+      <p><strong>Téléphone : </strong>06.13.28.54.78</p>
+      <p><strong>Email : </strong><a href="mailto:justine@jl-immobilier.com">justine@jl-immobilier.com</a></p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Justine Haye Immobilier - Montpellier</p>
+    <p><a href="#">Mentions légales</a> | <a href="#">Politique de confidentialité</a> | <a href="#">Contact</a></p>
+  </footer>
+</body>
+</html>
